@@ -38,6 +38,26 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
-        #name: silversabres.${{ github.sha }}.android
-        name: silversabres.android
+        name: silversabres.${{ github.sha }}.android
         path: build/app/outputs/flutter-apk/app-release.apk
+    
+  build_ios:
+    needs: check_commit_msg
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-java@v1
+      with:
+        java-version: '12.x'
+    - uses: subosito/flutter-action@v1
+      with:
+        flutter-version: '2.0.0'
+    - run: dart --version
+    - run: flutter --version
+    - run: flutter pub get
+    - run: flutter build ios --release --no-codesign
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: silversabres.${{ github.sha }}.ios
+        path: build/ios/iphoneos/Runner.app
