@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import 'package:sail_app/constant/app_colors.dart';
-import 'package:sail_app/models/user_model.dart';
-import 'package:sail_app/models/user_subscribe_model.dart';
-import 'package:sail_app/utils/navigator_util.dart';
+import 'package:sail/constant/app_colors.dart';
+import 'package:sail/constant/app_strings.dart';
+import 'package:sail/models/app_model.dart';
+import 'package:sail/models/user_model.dart';
+import 'package:sail/models/user_subscribe_model.dart';
+import 'package:sail/utils/navigator_util.dart';
 
 class LogoBar extends StatelessWidget {
   const LogoBar({
-    Key key,
-    @required this.isOn,
+    Key? key,
+    required this.isOn,
   }) : super(key: key);
 
   final bool isOn;
 
   @override
   Widget build(BuildContext context) {
-    UserModel _userModel = Provider.of<UserModel>(context);
-    UserSubscribeModel _userSubscribeModel = Provider.of<UserSubscribeModel>(context);
+    AppModel appModel = Provider.of<AppModel>(context);
+    UserModel userModel = Provider.of<UserModel>(context);
+    UserSubscribeModel userSubscribeModel = Provider.of<UserSubscribeModel>(context);
 
     return Container(
       margin: EdgeInsets.only(top: ScreenUtil().setWidth(60)),
@@ -26,74 +28,74 @@ class LogoBar extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-
-          Text("瞰视云加速",
+          Text(
+            AppStrings.appName,
             style: TextStyle(
               fontWeight: FontWeight.w900,
               fontSize: ScreenUtil().setSp(60),
-              color: isOn? AppColors.GRAY_COLOR: Colors.white,
+              color: isOn ? AppColors.grayColor : Colors.white,
             ),
           ),
-
           Row(
             children: [
               Material(
-                color: isOn? Color(0x66000000): AppColors.DARK_SURFACE_COLOR,
+                color: isOn ? const Color(0x66000000) : AppColors.darkSurfaceColor,
                 borderRadius: BorderRadius.circular(ScreenUtil().setWidth(30)),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(ScreenUtil().setWidth(30)),
-                  onTap: (){
-                  },
+                  onTap: () => NavigatorUtil.goToCrisp(context),
                   child: Container(
-                    padding: EdgeInsets.symmetric(vertical: ScreenUtil().setWidth(10), horizontal: ScreenUtil().setWidth(30)),
-                    child: Row(
-                      children: [
-                        Icon(MaterialCommunityIcons.wallet_outline,
-                            color: Colors.yellow
-                        ),
-                        Padding(padding: EdgeInsets.only(left: ScreenUtil().setWidth(5))),
-                        Text('余额：${(_userSubscribeModel?.userSubscribeEntity?.balance ?? 0) / 100}',
-                          style: TextStyle(
-                            fontSize: ScreenUtil().setSp(32),
-                              color: Colors.white,
-                              fontWeight: FontWeight.w500
-                          ),
-                        )
-                      ],
+                    padding: EdgeInsets.symmetric(
+                        vertical: ScreenUtil().setWidth(10), horizontal: ScreenUtil().setWidth(30)),
+                    child: Text(
+                      "客服",
+                      style:
+                      TextStyle(fontSize: ScreenUtil().setSp(36), color: Colors.white, fontWeight: FontWeight.w500),
                     ),
                   ),
                 ),
               ),
-              _userModel.isLogin ? Padding(padding: EdgeInsets.only(left: ScreenUtil().setWidth(15))) : Container(),
-              _userModel.isLogin ? Material(
-                color: isOn? Color(0x66000000): AppColors.DARK_SURFACE_COLOR,
+              Padding(padding: EdgeInsets.only(left: ScreenUtil().setWidth(15))),
+              Material(
+                color: isOn ? const Color(0x66000000) : AppColors.darkSurfaceColor,
                 borderRadius: BorderRadius.circular(ScreenUtil().setWidth(30)),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(ScreenUtil().setWidth(30)),
-                  onTap: (){
-                    _userModel.logout();
-                    NavigatorUtil.goLogin(context);
-                  },
+                  onTap: () => appModel.jumpToPage(3),
                   child: Container(
-                    padding: EdgeInsets.symmetric(vertical: ScreenUtil().setWidth(10), horizontal: ScreenUtil().setWidth(30)),
-                    child: Row(
-                      children: [
-                        Icon(MaterialCommunityIcons.exit_to_app,
-                            color: Colors.yellow
-                        ),
-                        Padding(padding: EdgeInsets.only(left: ScreenUtil().setWidth(5))),
-                        Text('退出',
-                          style: TextStyle(
-                              fontSize: ScreenUtil().setSp(32),
-                              color: Colors.white,
-                              fontWeight: FontWeight.w500
-                          ),
-                        )
-                      ],
+                    padding: EdgeInsets.symmetric(
+                        vertical: ScreenUtil().setWidth(10), horizontal: ScreenUtil().setWidth(30)),
+                    child: Text(
+                      userSubscribeModel?.userSubscribeEntity?.email ?? "欢迎光临",
+                      style:
+                          TextStyle(fontSize: ScreenUtil().setSp(36), color: Colors.white, fontWeight: FontWeight.w500),
                     ),
                   ),
                 ),
-              ) : Container(),
+              ),
+              userModel.isLogin ? Padding(padding: EdgeInsets.only(left: ScreenUtil().setWidth(15))) : Container(),
+              userModel.isLogin
+                  ? Material(
+                      color: isOn ? const Color(0x66000000) : AppColors.darkSurfaceColor,
+                      borderRadius: BorderRadius.circular(ScreenUtil().setWidth(30)),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(ScreenUtil().setWidth(30)),
+                        onTap: () {
+                          userModel.logout();
+                          NavigatorUtil.goLogin(context);
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                              vertical: ScreenUtil().setWidth(10), horizontal: ScreenUtil().setWidth(30)),
+                          child: Text(
+                            '退出',
+                            style: TextStyle(
+                                fontSize: ScreenUtil().setSp(36), color: Colors.white, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ),
+                    )
+                  : Container(),
             ],
           )
         ],

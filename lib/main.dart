@@ -1,35 +1,41 @@
 import 'package:fluro/fluro.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' as Services;
-import 'package:sail_app/constant/app_strings.dart';
+import 'package:flutter/services.dart' as services;
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:sail/constant/app_colors.dart';
+import 'package:sail/constant/app_strings.dart';
 import 'package:provider/provider.dart';
-import 'package:sail_app/models/server_model.dart';
-import 'package:sail_app/models/user_subscribe_model.dart';
-import 'package:sail_app/router/application.dart';
-import 'package:sail_app/router/routers.dart';
-import 'package:sail_app/models/user_model.dart';
+import 'package:sail/models/app_model.dart';
+import 'package:sail/models/plan_model.dart';
+import 'package:sail/models/server_model.dart';
+import 'package:sail/models/user_subscribe_model.dart';
+import 'package:sail/router/application.dart';
+import 'package:sail/router/routers.dart';
+import 'package:sail/models/user_model.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import 'constant/app_colors.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  var _userViewModel = UserModel();
-  var _userSubscribeModel = UserSubscribeModel();
-  var _serverModel = ServerModel();
+  var appModel = AppModel();
+  var userViewModel = UserModel();
+  var userSubscribeModel = UserSubscribeModel();
+  var serverModel = ServerModel();
+  var planModel = PlanModel();
 
-  await _userViewModel.refreshData();
-  runApp(MultiProvider(
-    providers: [
-      ChangeNotifierProvider<UserModel>.value(value: _userViewModel),
-      ChangeNotifierProvider<UserSubscribeModel>.value(value: _userSubscribeModel),
-      ChangeNotifierProvider<ServerModel>.value(value: _serverModel),
-    ],
-    child: SailApp()
-  ));
+  await userViewModel.refreshData();
+
+  runApp(MultiProvider(providers: [
+    ChangeNotifierProvider<AppModel>.value(value: appModel),
+    ChangeNotifierProvider<UserModel>.value(value: userViewModel),
+    ChangeNotifierProvider<UserSubscribeModel>.value(value: userSubscribeModel),
+    ChangeNotifierProvider<ServerModel>.value(value: serverModel),
+    ChangeNotifierProvider<PlanModel>.value(value: planModel)
+  ], child: SailApp()));
 }
 
 class SailApp extends StatelessWidget {
-  SailApp() {
+  SailApp({Key? key}) : super(key: key) {
     final router = FluroRouter();
     Routers.configureRoutes(router);
     Application.router = router;
@@ -38,21 +44,30 @@ class SailApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    Services.SystemChrome.setPreferredOrientations([
-      Services.DeviceOrientation.portraitUp,
-      Services.DeviceOrientation.portraitDown
-    ]);
+    AppModel appModel = Provider.of<AppModel>(context);
+
+    services.SystemChrome.setPreferredOrientations(
+        [services.DeviceOrientation.portraitUp, services.DeviceOrientation.portraitDown]);
 
     return MaterialApp(
       // <--- /!\ Add the builder
-      title: AppStrings.APP_NAME,
+      title: AppStrings.appName,
       navigatorKey: Application.navigatorKey,
       debugShowCheckedModeBanner: false,
-      onGenerateRoute: Application.router.generator,
-      theme: ThemeData(
-          primarySwatch: AppColors.THEME_COLOR,
-          visualDensity: VisualDensity.adaptivePlatformDensity
-      ),
+      onGenerateRoute: Application.router?.generator,
+      localizationsDelegates: const [
+        // 本地化的代理类
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', 'US'), // 美式英语
+        Locale('zh', 'CN'), // 简体中文
+        //其它Locales
+      ],
+      theme: appModel.themeData,
     );
   }
 }

@@ -5,13 +5,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 class SharedPreferencesUtil {
   SharedPreferencesUtil._();
 
-  static SharedPreferencesUtil _instance;
-  SharedPreferences sharedPreferences;
+  static SharedPreferencesUtil? _instance;
+  late SharedPreferences sharedPreferences;
 
-  static SharedPreferencesUtil getInstance() {
-    if (_instance == null) {
-      _instance = SharedPreferencesUtil._();
-    }
+  static SharedPreferencesUtil? getInstance() {
+    _instance ??= SharedPreferencesUtil._();
     return _instance;
   }
 
@@ -34,10 +32,10 @@ class SharedPreferencesUtil {
     }
   }
 
-  static Future<T> getData<T>(String key) async {
+  static Future<T?> getData<T>(String key) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    T res;
+    T? res;
     switch (T) {
       case String:
         res = prefs.getString(key) as T;
@@ -52,6 +50,7 @@ class SharedPreferencesUtil {
         res = prefs.getDouble(key) as T;
         break;
     }
+
     return res;
   }
 
@@ -65,22 +64,22 @@ class SharedPreferencesUtil {
     return sharedPreferences.setString(tag, data);
   }
 
-  Future<bool> setMap(String tag, Map<String, dynamic> data) async {
+  Future<bool> setMap(String tag, Map<String, dynamic>? data) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     return sharedPreferences.setString(tag, jsonEncode(data));
   }
 
-  Future<bool> setList(String tag, List<dynamic> data) async {
+  Future<bool> setList(String tag, List<dynamic>? data) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     return sharedPreferences.setString(tag, jsonEncode(data));
   }
 
-  Future<bool> getBool(String tag) async {
+  Future<bool?> getBool(String tag) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     return sharedPreferences.getBool(tag);
   }
 
-  Future<String> getString(String tag) async {
+  Future<String?> getString(String tag) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     return sharedPreferences.getString(tag);
   }

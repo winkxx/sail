@@ -1,66 +1,69 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
 import 'package:provider/provider.dart';
-import 'package:sail_app/models/login_model.dart';
-import 'package:sail_app/models/user_model.dart';
-import 'package:sail_app/service/user_service.dart';
-import 'package:sail_app/utils/navigator_util.dart';
-import 'package:sail_app/constant/app_strings.dart';
+import 'package:sail/models/login_model.dart';
+import 'package:sail/models/user_model.dart';
+import 'package:sail/service/user_service.dart';
+import 'package:sail/utils/navigator_util.dart';
+import 'package:sail/constant/app_strings.dart';
 
-// ignore: must_be_immutable
-class LoginPage extends StatelessWidget {
-  Duration get loginTime => Duration(milliseconds: 2250);
+class LoginPage extends StatefulWidget {
+  const LoginPage({Key? key}) : super(key: key);
 
-  UserModel _userModel;
-  LoginModel _loginModel;
+  @override
+  LoginPageState createState() => LoginPageState();
+}
 
-  static final FormFieldValidator<String> _emailValidator = (value) {
-    if (value.isEmpty ||
-        !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(value)) {
-      return '邮箱错误!';
+class LoginPageState extends State<LoginPage> {
+  Duration get loginTime => const Duration(milliseconds: 2250);
+
+  late UserModel _userModel;
+  late LoginModel _loginModel;
+
+  static String? _emailValidator(value) {
+    if (value.isEmpty || !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(value)) {
+      return '请输入正确邮箱!';
     }
     return null;
-  };
+  }
 
-  static final FormFieldValidator<String> _passwordValidator = (value) {
-    if (value.isEmpty) {
+  static String? _passwordValidator(String? value) {
+    if (value?.isEmpty == true) {
       return '密码不能为空!';
     }
-    if (value.length < 6) {
+    if (value?.length == null || value!.length < 6) {
       return '密码不能小于6位';
     }
     return null;
-  };
+  }
 
-
-  Future<String> _login(LoginData data) async {
-    String result;
+  Future<String?> _login(LoginData data) async {
+    String? result;
 
     try {
       await _loginModel.login(data.name, data.password);
-    } catch (err) {
+    } catch (error) {
       result = '登陆失败，请重试';
     }
 
     return result;
   }
 
-  Future<String> _register(LoginData data) async {
-    String result;
+  Future<String?> _register(SignupData data) async {
+    String? result;
 
     try {
-      await UserService()
-          .register({'email': data.name, 'password': data.password});
+      await UserService().register({'email': data.name, 'password': data.password});
 
       await _loginModel.login(data.name, data.password);
-    } catch (err) {
+    } catch (error) {
       result = '注册失败，请重试';
     }
 
     return result;
   }
 
-  Future<String> _recoverPassword(String name) {
+  Future<String?> _recoverPassword(String name) {
     return Future.delayed(loginTime).then((_) {
       return null;
     });
@@ -72,11 +75,11 @@ class LoginPage extends StatelessWidget {
     _loginModel = LoginModel(_userModel);
 
     return FlutterLogin(
-      title: AppStrings.APP_NAME,
+      title: AppStrings.appName,
       onLogin: _login,
       onSignup: _register,
       messages: LoginMessages(
-          usernameHint: '邮箱',
+          userHint: '邮箱',
           passwordHint: '密码',
           confirmPasswordHint: '确认密码',
           confirmPasswordError: '两次密码不匹配',
@@ -92,7 +95,7 @@ class LoginPage extends StatelessWidget {
         NavigatorUtil.goHomePage(context);
       },
       onRecoverPassword: _recoverPassword,
-      emailValidator: _emailValidator,
+      userValidator: _emailValidator,
       passwordValidator: _passwordValidator,
     );
   }

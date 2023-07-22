@@ -2,26 +2,16 @@
 //
 //     final loginEntity = loginEntityFromMap(jsonString);
 
-import 'package:meta/meta.dart';
 import 'dart:convert';
 
 class LoginEntity {
   LoginEntity({
-    @required this.token,
-    @required this.isAdmin,
+    required this.token,
+    required this.authData,
   });
 
   final String token;
-  final bool isAdmin;
-
-  LoginEntity copyWith({
-    String token,
-    bool isAdmin,
-  }) =>
-      LoginEntity(
-        token: token ?? this.token,
-        isAdmin: isAdmin ?? this.isAdmin,
-      );
+  final String authData;
 
   factory LoginEntity.fromJson(String str) => LoginEntity.fromMap(json.decode(str));
 
@@ -29,11 +19,11 @@ class LoginEntity {
 
   factory LoginEntity.fromMap(Map<String, dynamic> json) => LoginEntity(
     token: json["token"],
-    isAdmin: json["is_admin"],
+    authData: json["auth_data"],
   );
 
   Map<String, dynamic> toMap() => {
     "token": token,
-    "is_admin": isAdmin,
+    "auth_token": authData,
   };
 }

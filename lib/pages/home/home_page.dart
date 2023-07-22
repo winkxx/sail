@@ -1,178 +1,164 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import 'package:sail_app/channels/vpn_manager.dart';
-import 'package:sail_app/constant/app_colors.dart';
-import 'package:sail_app/entity/plan_entity.dart';
-import 'package:sail_app/models/server_model.dart';
-import 'package:sail_app/models/user_model.dart';
-import 'package:sail_app/models/user_subscribe_model.dart';
-import 'package:sail_app/widgets/recent_connection_bottom_sheet.dart';
-import 'package:sail_app/service/plan_service.dart';
-import 'package:sail_app/widgets/connection_stats.dart';
-import 'package:sail_app/widgets/logo_bar.dart';
-import 'package:sail_app/widgets/my_subscribe.dart';
-import 'package:sail_app/widgets/plan_list.dart';
-import 'package:sail_app/widgets/power_btn.dart';
-import 'package:sail_app/widgets/select_location.dart';
-import 'package:sail_app/utils/navigator_util.dart';
-
-typedef Callback = Future<void> Function();
+import 'package:sail/constant/app_colors.dart';
+import 'package:sail/constant/app_dimens.dart';
+import 'package:sail/models/app_model.dart';
+import 'package:sail/models/plan_model.dart';
+import 'package:sail/models/server_model.dart';
+import 'package:sail/models/user_model.dart';
+import 'package:sail/models/user_subscribe_model.dart';
+import 'package:sail/pages/my_profile.dart';
+import 'package:sail/pages/plan/plan_page.dart';
+import 'package:sail/pages/server_list.dart';
+import 'package:sail/widgets/home_widget.dart';
+import 'package:sail/widgets/power_btn.dart';
+import 'package:sail/widgets/sail_app_bar.dart';
+import 'package:sail/utils/common_util.dart';
 
 class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
+
   @override
   HomePageState createState() => HomePageState();
 }
 
-class HomePageState extends State<HomePage> {
-  UserModel _userModel;
-  UserSubscribeModel _userSubscribeModel;
-  ServerModel _serverModel;
-  List<PlanEntity> _planEntityList = List<PlanEntity>();
-  bool isOn;
-  int lastConnectedIndex = 1;
+class HomePageState extends State<HomePage> with WidgetsBindingObserver {
+  late AppModel _appModel;
+  late ServerModel _serverModel;
+  late UserModel _userModel;
+  late UserSubscribeModel _userSubscribeModel;
+  late PlanModel _planModel;
   bool _isLoadingData = false;
-  VpnManager vpnManager = VpnManager();
+  bool _initialStatus = false;
+  late Timer _timer;
 
   @override
   void initState() {
     super.initState();
-    isOn = false;
+    WidgetsBinding.instance.addObserver(this);
+    createTimer();
+  }
 
-    PlanService().plan().then((planEntityList) {
-      setState(() {
-        _planEntityList = planEntityList;
-      });
+  @override
+  void dispose() {
+    cancelTimer();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  void createTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _appModel.getStatus();
     });
+  }
+
+  void cancelTimer() {
+    _timer.cancel();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    print('state = $state');
+
+    if (state == AppLifecycleState.resumed) {
+      _planModel.fetchPlanList();
+    }
   }
 
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
 
-    _onRefresh();
-  }
-
-  Future _onRefresh() async {
+    _appModel = Provider.of<AppModel>(context);
     _userModel = Provider.of<UserModel>(context);
     _userSubscribeModel = Provider.of<UserSubscribeModel>(context);
     _serverModel = Provider.of<ServerModel>(context);
+    _planModel = Provider.of<PlanModel>(context);
 
     if (_userModel.isLogin && !_isLoadingData) {
       _isLoadingData = true;
       await _userSubscribeModel.getUserSubscribe();
-      await _serverModel.getServerList();
+      await _serverModel.getServerList(forceRefresh: true);
       await _serverModel.getSelectServer();
-      await _serverModel.getSelectServerList();
+      _appModel.setConfigProxies(_userModel, _serverModel);
     }
-  }
 
-  Future<void> pressConnectBtn() async {
-    await vpnManager.enableVPNManager();
-    setState(() {
-      isOn = !isOn;
-
-      if (isOn) {
-        print(_serverModel.selectServerEntity.toJson());
-      }
-    });
-  }
-
-  Future<void> changeBoughtPlanId(id) async {
-    NavigatorUtil.goPlan(context);
-    // _userSubscribeModel.getUserSubscribe();
-  }
-
-  Future<void> selectServerNode() async {
-    await NavigatorUtil.goServerList(context);
-  }
-
-  Future<void> checkHasLogin(Callback callback) async {
-    if (!_userModel.isLogin) {
-      NavigatorUtil.goLogin(context);
-    } else {
-      return callback();
+    if (!_initialStatus) {
+      _initialStatus = true;
+      _planModel.fetchPlanList();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    ScreenUtil.init(context, designSize: const Size(AppDimens.maxWidth, AppDimens.maxHeight));
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
-        value: isOn ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light,
+        value: _appModel.isOn ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light,
         child: Scaffold(
-            backgroundColor:
-                isOn ? AppColors.YELLOW_COLOR : AppColors.GRAY_COLOR,
-            body: Stack(
-              children: [
-                SafeArea(
-                    child: SingleChildScrollView(
-                        physics: BouncingScrollPhysics(),
-                        child: Container(
-                            constraints: BoxConstraints(
-                                minHeight: ScreenUtil().setHeight(1920)),
-                            child: Column(
-                              children: [
-                                // Logo bar
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                      left: ScreenUtil().setWidth(75),
-                                      right: ScreenUtil().setWidth(75)),
-                                  child: LogoBar(isOn: isOn),
-                                ),
-
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                      top: ScreenUtil().setWidth(30)),
-                                  child: MySubscribe(
-                                    isLogin: _userModel.isLogin,
-                                    isOn: isOn,
-                                    parent: this,
-                                    userSubscribeEntity:
-                                        _userSubscribeModel.userSubscribeEntity,
-                                  ),
-                                ),
-
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: ScreenUtil().setWidth(30)),
-                                  child: PlanList(
-                                    isOn: isOn,
-                                    boughtPlanId: _userSubscribeModel
-                                            ?.userSubscribeEntity?.planId ??
-                                        0,
-                                    parent: this,
-                                    plans: _planEntityList,
-                                  ),
-                                ),
-
-                                Container(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: ScreenUtil().setWidth(75)),
-                                    child: Stack(
-                                        alignment: Alignment.center,
-                                        children: [
-                                          Image.asset(
-                                            "assets/map.png",
-                                            scale: 3,
-                                            color: isOn
-                                                ? Color(0x15000000)
-                                                : AppColors.DARK_SURFACE_COLOR,
-                                          ),
-                                          Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.end,
-                                            children: [PowerButton(this)],
-                                          )
-                                        ])),
-
-                                isOn
-                                    ? ConnectionStats(this)
-                                    : SelectLocation(this),
-                              ],
-                            )))),
-                RecentConnectionBottomSheet()
-              ],
-            )));
+            appBar: SailAppBar(
+              appTitle: _appModel.appTitle,
+            ),
+            extendBody: true,
+            backgroundColor: _appModel.isOn ? AppColors.yellowColor : AppColors.grayColor,
+            body: SafeArea(
+                bottom: false,
+                child: PageView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  controller: _appModel.pageController,
+                  children: const [HomeWidget(), PlanPage(), ServerListPage(), MyProfile()],
+                )),
+            floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+            floatingActionButton: const PowerButton(),
+            bottomNavigationBar: ClipRRect(
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(ScreenUtil().setWidth(50)),
+                    topRight: Radius.circular(ScreenUtil().setWidth(50))),
+                child: BottomAppBar(
+                  notchMargin: 8,
+                  shape: const CircularNotchedRectangle(),
+                  color: _appModel.isOn ? AppColors.grayColor : AppColors.themeColor,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: <Widget>[
+                      IconButton(
+                        icon: const Icon(
+                          Icons.home_rounded,
+                          color: Colors.white,
+                        ),
+                        onPressed: () => _appModel.jumpToPage(0),
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.wallet,
+                          color: Colors.white,
+                        ),
+                        onPressed: () => _appModel.jumpToPage(1),
+                      ),
+                      SizedBox(
+                        width: ScreenUtil().setWidth(50),
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.cloud_rounded,
+                          color: Colors.white,
+                        ),
+                        onPressed: () => _appModel.jumpToPage(2),
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.person,
+                          color: Colors.white,
+                        ),
+                        onPressed: () => _appModel.jumpToPage(3),
+                      )
+                    ],
+                  ),
+                ))));
   }
 }

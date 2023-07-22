@@ -1,44 +1,78 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:sail_app/constant/app_colors.dart';
-import 'package:sail_app/pages/home/home_page.dart';
+import 'package:provider/provider.dart';
+import 'package:sail/constant/app_colors.dart';
+import 'package:sail/models/app_model.dart';
+import 'package:sail/models/user_model.dart';
+import 'package:sail/utils/navigator_util.dart';
 
-// ignore: must_be_immutable
 class ConnectionStats extends StatefulWidget {
-  ConnectionStats(this.parent);
-
-  HomePageState parent;
+  const ConnectionStats({Key? key}) : super(key: key);
 
   @override
-  _ConnectionStatsState createState() => _ConnectionStatsState();
+  ConnectionStatsState createState() => ConnectionStatsState();
 }
 
-class _ConnectionStatsState extends State<ConnectionStats> {
+class ConnectionStatsState extends State<ConnectionStats> {
+  late UserModel _userModel;
+  late AppModel _appModel;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _userModel = Provider.of<UserModel>(context);
+    _appModel = Provider.of<AppModel>(context);
+  }
+
+  String toDateString(DateTime date) {
+    var duration = DateTime.now().difference(date);
+    var microseconds = duration.inMicroseconds;
+    var sign = (microseconds < 0) ? "-" : "";
+
+    var hours = microseconds ~/ Duration.microsecondsPerHour;
+    microseconds = microseconds.remainder(Duration.microsecondsPerHour);
+    var hoursPadding = hours.abs() < 10 ? "0" : "";
+
+    if (microseconds < 0) microseconds = -microseconds;
+
+    var minutes = microseconds ~/ Duration.microsecondsPerMinute;
+    microseconds = microseconds.remainder(Duration.microsecondsPerMinute);
+
+    var minutesPadding = minutes < 10 ? "0" : "";
+
+    var seconds = microseconds ~/ Duration.microsecondsPerSecond;
+    microseconds = microseconds.remainder(Duration.microsecondsPerSecond);
+
+    var secondsPadding = seconds < 10 ? "0" : "";
+
+    return "$sign$hoursPadding${hours.abs()}:"
+        "$minutesPadding$minutes:"
+        "$secondsPadding$seconds";
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text("00:15:02",
-            style: TextStyle(
+        Text(toDateString(_appModel.connectedDate!),
+            style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 40,
-              color: AppColors.GRAY_COLOR,
+              color: AppColors.grayColor,
             )),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: ScreenUtil().setWidth(75)),
-          child: FlatButton(
-              onPressed: () {
-                widget.parent.checkHasLogin(() => widget.parent.selectServerNode());
-              },
+          child: TextButton(
+              onPressed: () => _userModel.checkHasLogin(context, () => NavigatorUtil.goServerList(context)),
               child:
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Icon(MaterialCommunityIcons.map_marker,
-                    color: AppColors.GRAY_COLOR, size: 20),
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: const [
+                Icon(Icons.map,
+                    color: AppColors.grayColor, size: 20),
                 Text("其他节点",
                     style:
-                        TextStyle(fontSize: 12, color: AppColors.GRAY_COLOR)),
-                Icon(Icons.chevron_right, color: AppColors.GRAY_COLOR, size: 20)
+                    TextStyle(fontSize: 12, color: AppColors.grayColor)),
+                Icon(Icons.chevron_right, color: AppColors.grayColor, size: 20)
               ])),
         ),
         Padding(
@@ -52,16 +86,16 @@ class _ConnectionStatsState extends State<ConnectionStats> {
                 // Download Icon
                 Container(
                   decoration: BoxDecoration(
-                      boxShadow: [
+                      boxShadow: const [
                         BoxShadow(
                             color: Color(0xffff0000),
                             blurRadius: 13,
                             spreadRadius: -2)
                       ],
-                      color: Color(0xffff0000),
+                      color: const Color(0xffff0000),
                       borderRadius: BorderRadius.circular(13)),
-                  padding: EdgeInsets.all(5),
-                  child: Icon(
+                  padding: const EdgeInsets.all(5),
+                  child: const Icon(
                     Icons.arrow_downward,
                     color: Colors.white,
                   ),
@@ -73,23 +107,23 @@ class _ConnectionStatsState extends State<ConnectionStats> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         "下行速度",
                         style: TextStyle(
-                            color: AppColors.GRAY_COLOR,
+                            color: AppColors.grayColor,
                             fontWeight: FontWeight.w500),
                       ),
                       RichText(
-                        text: TextSpan(
+                        text: const TextSpan(
                             style: TextStyle(
-                                color: AppColors.GRAY_COLOR,
+                                color: AppColors.grayColor,
                                 fontWeight: FontWeight.w900),
                             children: [
                               TextSpan(text: "75.9"),
                               TextSpan(
                                   text: " KB/s",
                                   style:
-                                      TextStyle(fontWeight: FontWeight.normal)),
+                                  TextStyle(fontWeight: FontWeight.normal)),
                             ]),
                       )
                     ],
@@ -104,16 +138,16 @@ class _ConnectionStatsState extends State<ConnectionStats> {
                 // Upload Icon
                 Container(
                   decoration: BoxDecoration(
-                      boxShadow: [
+                      boxShadow: const [
                         BoxShadow(
                             color: Color(0xff03a305),
                             blurRadius: 13,
                             spreadRadius: -2)
                       ],
-                      color: Color(0xff03a305),
+                      color: const Color(0xff03a305),
                       borderRadius: BorderRadius.circular(13)),
-                  padding: EdgeInsets.all(5),
-                  child: Icon(
+                  padding: const EdgeInsets.all(5),
+                  child: const Icon(
                     Icons.arrow_upward,
                     color: Colors.white,
                   ),
@@ -125,23 +159,23 @@ class _ConnectionStatsState extends State<ConnectionStats> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         "上行速度",
                         style: TextStyle(
-                            color: AppColors.GRAY_COLOR,
+                            color: AppColors.grayColor,
                             fontWeight: FontWeight.w500),
                       ),
                       RichText(
-                        text: TextSpan(
+                        text: const TextSpan(
                             style: TextStyle(
-                                color: AppColors.GRAY_COLOR,
+                                color: AppColors.grayColor,
                                 fontWeight: FontWeight.w900),
                             children: [
                               TextSpan(text: "29.6"),
                               TextSpan(
                                   text: " KB/s",
                                   style:
-                                      TextStyle(fontWeight: FontWeight.normal)),
+                                  TextStyle(fontWeight: FontWeight.normal)),
                             ]),
                       )
                     ],

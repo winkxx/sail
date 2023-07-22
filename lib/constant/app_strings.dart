@@ -1,12 +1,14 @@
 class AppStrings {
-  static const String APP_NAME = '瞰视云加速';
-  static const String TOKEN = 'X-ACCESS-TOKEN';
-  static const String USER_INFO = 'USER_INFO';
-  static const String USER_SUBSCRIBE = 'USER_SUBSCRIBE';
-  static const String SERVER_NODE = 'SERVER_NODE';
-  static const String SELECT_SERVER = 'SELECT_SERVER';
-  static const String SELECT_SERVER_NODE = 'SELECT_SERVER_NODE';
-  static const String ERR_NO = 'ERR_NO';
-  static const String IS_FIRST = "IS_FIRST";
-  static const String OPEN_DOOR = '开启加速服务';
+  static const String appName = 'Sail';
+  static const String token = 'token';
+  static const String authData = 'auth_data';
+  static const String userInfo = 'USER_INFO';
+  static const String userSubscribe = 'USER_SUBSCRIBE';
+  static const String serverNode = 'SERVER_NODE';
+  static const String selectServer = 'SELECT_SERVER';
+  static const String selectServerIndex = 'SELECT_SERVER_INDEX';
+  static const String selectServerNode = 'SELECT_SERVER_NODE';
+  static const String isFirstOpen = "IS_FIRST_OPEN";
+  static const String openDoor = '开启加速服务';
+  static const String crispWebsiteId = 'b7b8fcd4-9857-42b7-a39d-51fb4930130d';
 }
