@@ -1,13 +1,11 @@
 class AppUrls {
-  static const String baseUrl = 'http://v2.winkxrq.tk'; // 基础接口地址
-  static const String baseApiUrl = '$baseUrl/api/v1'; // 基础接口地址
+  static const String baseUrl = 'http://v2.winkxrq.tk/api/v1'; // 基础接口地址
 
-  static const String login = '$baseApiUrl/passport/auth/login';
-  static const String register = '$baseApiUrl/passport/auth/register';
-  static const String getQuickLoginUrl = '$baseApiUrl/passport/auth/getQuickLoginUrl';
-
-  static const String userSubscribe = '$baseApiUrl/user/getSubscribe';
-  static const String plan = '$baseApiUrl/guest/plan/fetch';
-  static const String server = '$baseApiUrl/user/server/fetch';
-  static const String userInfo = '$baseApiUrl/user/info';
+  static const String getQuickLoginUrl = '$baseUrl/passport/auth/getQuickLoginUrl';
+  static const String login = '$baseUrl/passport/auth/login';
+  static const String register = '$baseUrl/passport/auth/register';
+  static const String userSubscribe = '$baseUrl/user/getSubscribe';
+  static const String plan = '$baseUrl/guest/plan/fetch';
+  static const String server = '$baseUrl/user/server/fetch';
+  static const String userInfo = '$baseUrl/user/info';
 }
