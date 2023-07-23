@@ -1,5 +1,5 @@
 class AppUrls {
-  static const String baseUrl = 'http://v2.winkxrq.tk/api/v1'; // 基础接口地址
+  static const String baseUrl = 'https://v2.winkxrq.tk/api/v1'; // 基础接口地址
 
   static const String getQuickLoginUrl = '$baseUrl/passport/auth/getQuickLoginUrl';
   static const String login = '$baseUrl/passport/auth/login';
